@@ -1,0 +1,21 @@
+{
+  "name": "whomap",
+  "version": "1.0.0",
+  "description": "From http://apps.who.int/gho/data/node.main.ASDRBYCOUNTRY?lang=en",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "d3": "^3.5.8",
+    "i18n-iso-countries": "^0.9.0",
+    "jquery": "^2.1.4",
+    "textures": "^1.0.3",
+    "topojson": "^1.6.19"
+  },
+  "devDependencies": {
+    "coffeeify": "^1.1.0"
+  }
+}

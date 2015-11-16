@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<meta charset="utf-8">
+<style>
+
+body, html, svg  {
+  /*background: #fcfcfa;*/
+  background: black;
+  margin: 0px;
+  padding: 0px;
+  /*overflow: hidden;*/
+}
+
+.overlay {
+  fill: none;
+  pointer-events: all;
+}
+
+path.country {
+  stroke: black;
+  stroke-width: 0.2px;
+}
+
+path.country:hover {
+  stroke: white;
+  stroke-width: 0.2px;
+}
+
+text {
+	fill:white;
+	font-family: sans-serif;
+	/*stroke: blue;*/
+}
+
+svg  .legend {
+	shape-rendering: crispEdges;
+}
+
+
+</style>
+<body>
+<script src="bundle.js"></script>
+<!-- <script src="//d3js.org/d3.v3.min.js"></script>
+<script src="//d3js.org/d3.geo.projection.v0.min.js"></script>
+<script src="//d3js.org/topojson.v1.min.js"></script>
