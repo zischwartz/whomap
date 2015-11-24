@@ -12,6 +12,7 @@
     "d3": "^3.5.8",
     "i18n-iso-countries": "^0.9.0",
     "jquery": "^2.1.4",
+    "point-in-polygon": "^1.0.0",
     "textures": "^1.0.3",
     "topojson": "^1.6.19"
   },

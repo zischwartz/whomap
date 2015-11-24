@@ -4,6 +4,7 @@ topojson = require 'topojson'
 textures = require 'textures'
 convert_countries = require "i18n-iso-countries"
 $ = require 'jquery'
+pip = require 'point-in-polygon'
 
 brewer = require './brewer.js'
 
@@ -45,6 +46,8 @@ d3.json 'world-110m.json', (error, world) ->
   d3.csv "population.csv", (d) ->
     # coerce to int with +
     d["pop_in_k"] = +d["pop_in_k"]
+    d["urban"] = +d["Population living in urban areas (%)"]
+    # Population living in urban areas (%)
     return d
   , (err, population)->
     # convert_countries.getName(4, "EN")
@@ -52,15 +55,9 @@ d3.json 'world-110m.json', (error, world) ->
     extent = d3.extent population, (d)-> d["pop_in_k"]
     # log, pow, linear
     # dot_scale = d3.scale.log().domain(extent).range([1, 5])
-    # dot_size_scale = d3.scale.linear().domain([extent[1], extent[0]]).range([2, 9]) # pretty nice
-    dot_size_scale = d3.scale.log().domain([extent[1], extent[0]]).range([2, 10]) # more
-    dot_radius_scale = d3.scale.linear().domain(extent).range([0.5, 2])
 
-
-    # dot_size_scale = d3.scale.pow().domain([extent[1], extent[0]]).range([2, 7])
-    window.dot_size_scale = dot_size_scale
-    window.dot_radius_scale = dot_radius_scale
-    # dot_size_scale = d3.scale.linear().domain([extent[1], extent[0]]).range([1, 8])
+    m_per_pixel = d3.scale.linear().domain([extent[0]/1000, extent[1]/1000]).range([1, 500])
+    window.m_per_pixel =m_per_pixel
 
     pop_by_name = {}
     for x in population
@@ -68,31 +65,60 @@ d3.json 'world-110m.json', (error, world) ->
 
     window.pop_by_name = pop_by_name
     if error then throw error
+    
     countries = topojson.feature(world, world.objects.countries).features
     neighbors = topojson.neighbors(world.objects.countries.geometries)
-    svg.selectAll('.country').data(countries).enter().insert('path', '.graticule').attr('class', 'country').attr('d', path).style 'fill', (d, i) ->
-      name = convert_countries.getName(d.id, "EN")
-      d["name"] = name
-      pop_data = pop_by_name[name]
-      d["pop_in_k"] = pop_data?["pop_in_k"]
-      if pop_data
-        dot_radius = dot_radius_scale pop_data["pop_in_k"]
-        dot_size = dot_size_scale pop_data["pop_in_k"]
-      else
-        # console.log d.id, name
-        dot_size = 15
-        dot_radius = 0
-      color d.color = d3.max(neighbors[i], (n) ->
-        countries[n].color
-      ) + 1 | 0
-      circle_texture = textures.circles().radius(dot_radius).size(dot_size).complement().fill(color d.color)
-      svg.call(circle_texture)
-      return circle_texture.url()
+    
+    # mash the data (countries) together
+    for c in countries
+     name = convert_countries.getName(c.id, "EN")
+     c["name"] = name
+     pop_data = pop_by_name[name]
+     c["pop_in_k"] = pop_data?["pop_in_k"]
+     c["urban"] = pop_data?["urban"]
+     [b1, b2]= path.bounds c
+     w = b2[0]-b1[0]
+     h = b2[1]-b1[1]
+     # @maxRadius, @padding, @width, @height, @autoadd=true)
+     max = c["urban"]/10
+     padding = 5
+
+     c["quad"] = new Quad(max, padding, w,h)
+     c["pop_remaining"] = c["pop_in_k"] 
+
+
+
+    svg.selectAll('.country').data(countries).enter().insert('path', '.graticule').attr('class', 'country').attr('d', path).each (d,i)->
+      console.log i, ':', d
+      # console.log path(d)
+      # console.log path.bounds d
+      # console.log path.area d
+      # console.log path.context(d)
+      # console.log this
+
+      console.log " "
+
+
+    .style 'fill', -> return "red"
+      # if pop_data
+      #   dot_radius = dot_radius_scale pop_data["pop_in_k"]
+      #   dot_size = dot_size_scale pop_data["pop_in_k"]
+      # else
+      #   # console.log d.id, name
+      #   dot_size = 15
+      #   dot_radius = 0
+      # color d.color = d3.max(neighbors[i], (n) ->
+      #   countries[n].color
+      # ) + 1 | 0
+      # circle_texture = textures.circles().radius(dot_radius).size(dot_size).complement().fill(color d.color)
+      # svg.call(circle_texture)
+      # return circle_texture.url()
 
     # tooltip!
     svg.selectAll(".country").append("svg:title").text (d)-> "#{d.name}: #{Math.round(d.pop_in_k/1000)}m"
 
 
+    # legend!
     ticks = dot_radius_scale.ticks(70)
     samples = []
     for t in ticks
@@ -104,7 +130,6 @@ d3.json 'world-110m.json', (error, world) ->
 
     mid = samples[10]
     end = samples[30]
-    console.log mid
     samples = samples[0...3].concat mid, end
     # console.log samples
 
@@ -154,13 +179,16 @@ d3.select(self.frameElement).style 'height', height + 'px'
 # set max radius based on urban population %
 # subtract that from total, base it on area!
 
-class Circle 
+class Quad 
   constructor: (@maxRadius, @padding, @width, @height, @autoadd=true) ->
     @quadtree = d3.geom.quadtree().extent([
       [0, 0],[@width, @height]
     ])([])
     @searchRadius = @maxRadius * 2
   
+  add: (b)=>
+    @quadtree.add b
+
   make: (k) =>
       if typeof k isnt 'number' then throw "Need a number"; return
       bestDistance = i = 0
@@ -200,9 +228,9 @@ class Circle
         bestDistance - @padding
       ]
       if @autoadd
-        @quadtree.add best
+        @add best
       best
 
 
 
-window.Circle = Circle
+window.Quad = Quad
