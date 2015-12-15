@@ -21883,8 +21883,6 @@ svg = d3.select('body').append('svg').attr('width', width).attr('height', height
 
 svg = svg.append("g");
 
-window.svg = svg;
-
 svg.append('rect').attr('class', 'overlay').attr('width', width).attr('height', height);
 
 d3.json('world-110m.json', function(error, world) {
@@ -21930,7 +21928,7 @@ d3.json('world-110m.json', function(error, world) {
       c["pop_remaining"] = c["pop_in_k"];
     }
     svg.selectAll('.country').data(countries).enter().insert('path', '.graticule').attr('class', 'country').attr('d', path).each(function(d, i) {
-      console.log(path(d));
+      console.log(i, ':', d);
       return console.log(" ");
     }).style('fill', function() {
       return "red";
@@ -22049,6 +22047,8 @@ Quad = (function() {
 })();
 
 window.Quad = Quad;
+
+window.polyCanvas = d3.select("body").append("canvas").attr("width", width).attr("height", height).style("display", "none");
 
 
 

@@ -83,8 +83,8 @@ d3.json 'world-110m.json', (error, world) ->
      max = c["urban"]/10
      padding = 5
 
-     c["quad"] = new Quad(max, padding, w,h)
-     c["pop_remaining"] = c["pop_in_k"] 
+     # c["quad"] = new Quad(max, padding, w,h)
+     # c["pop_remaining"] = c["pop_in_k"] 
 
 
 
@@ -234,3 +234,13 @@ class Quad
 
 
 window.Quad = Quad
+
+
+
+polyCanvas = d3.select("body")
+  .append("canvas")
+  .attr("width",width)
+  .attr("height",height)
+  .style("display","none")
+
+polyContext = polyCanvas.node().getContext("2d")
