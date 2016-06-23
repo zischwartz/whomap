@@ -59,6 +59,10 @@ d3.json 'world-110m.json', (error, world) ->
     m_per_pixel = d3.scale.linear().domain([extent[0]/1000, extent[1]/1000]).range([1, 500])
     window.m_per_pixel =m_per_pixel
 
+    # HAD DELETED THESE, but then there's an error, whaat was I doing six months ago again?
+    dot_size_scale = d3.scale.log().domain([extent[1], extent[0]]).range([2, 10]) # more
+    dot_radius_scale = d3.scale.linear().domain(extent).range([0.5, 2])
+
     pop_by_name = {}
     for x in population
       pop_by_name[x['country']]= x

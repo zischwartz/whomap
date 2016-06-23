@@ -21843,7 +21843,7 @@ module.exports = require('./textures.js')
 }();
 
 },{}],15:[function(require,module,exports){
-var $, Quad, brewer, color, convert_countries, d3, graticule, height, path, pip, projection, svg, textures, topojson, width, zoom, zoomed,
+var $, Quad, brewer, color, convert_countries, d3, graticule, height, path, pip, polyCanvas, polyContext, projection, svg, textures, topojson, width, zoom, zoomed,
   bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
 
 d3 = require('d3');
@@ -21894,13 +21894,15 @@ d3.json('world-110m.json', function(error, world) {
     d["urban"] = +d["Population living in urban areas (%)"];
     return d;
   }, function(err, population) {
-    var b1, b2, c, countries, end, extent, h, j, l, legend, len, len1, len2, m, m_per_pixel, max, mid, name, neighbors, padding, pop_by_name, pop_data, ref, samples, t, ticks, w, x;
+    var b1, b2, c, countries, dot_radius_scale, dot_size_scale, end, extent, h, j, l, legend, len, len1, len2, m, m_per_pixel, max, mid, name, neighbors, padding, pop_by_name, pop_data, ref, samples, t, ticks, w, x;
     window.population = population;
     extent = d3.extent(population, function(d) {
       return d["pop_in_k"];
     });
     m_per_pixel = d3.scale.linear().domain([extent[0] / 1000, extent[1] / 1000]).range([1, 500]);
     window.m_per_pixel = m_per_pixel;
+    dot_size_scale = d3.scale.log().domain([extent[1], extent[0]]).range([2, 10]);
+    dot_radius_scale = d3.scale.linear().domain(extent).range([0.5, 2]);
     pop_by_name = {};
     for (j = 0, len = population.length; j < len; j++) {
       x = population[j];
@@ -21924,8 +21926,6 @@ d3.json('world-110m.json', function(error, world) {
       h = b2[1] - b1[1];
       max = c["urban"] / 10;
       padding = 5;
-      c["quad"] = new Quad(max, padding, w, h);
-      c["pop_remaining"] = c["pop_in_k"];
     }
     svg.selectAll('.country').data(countries).enter().insert('path', '.graticule').attr('class', 'country').attr('d', path).each(function(d, i) {
       console.log(i, ':', d);
@@ -22048,7 +22048,9 @@ Quad = (function() {
 
 window.Quad = Quad;
 
-window.polyCanvas = d3.select("body").append("canvas").attr("width", width).attr("height", height).style("display", "none");
+polyCanvas = d3.select("body").append("canvas").attr("width", width).attr("height", height).style("display", "none");
+
+polyContext = polyCanvas.node().getContext("2d");
 
 
 
